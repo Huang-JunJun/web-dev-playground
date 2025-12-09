@@ -28,6 +28,28 @@ Promise.resolve().then(() => {
 })
 
 console.log('end')
+
+console.log("A")
+
+setTimeout(() => {
+  console.log("B start")
+
+  Promise.resolve().then(() => {
+    console.log("B microtask")
+  })
+
+  console.log("B end")
+}, 0)
+
+setTimeout(() => {
+  console.log("C")
+}, 0)
+
+Promise.resolve().then(() => {
+  console.log("D microtask")
+})
+
+console.log("E")
 ```
 
 - 执行顺序分析：
@@ -41,3 +63,4 @@ console.log('end')
   - 微任务队列清空后，进入下一轮事件循环，从宏任务队列中取出 setTimeout 回调：
     - 输出 `timeout`
   - 所以最终输出顺序是：`start` → `end` → `promise` → `timeout`。
+
