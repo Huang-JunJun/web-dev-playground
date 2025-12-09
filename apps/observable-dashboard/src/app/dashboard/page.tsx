@@ -1,65 +1,63 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { Card, Col, Row, Typography } from "antd"
+
+const { Title, Text } = Typography
+
+const stats = [
+  { title: "今日访问量", value: 12345 },
+  { title: "错误数", value: 23 },
+  { title: "告警数", value: 5 },
+  { title: "平均响应时间 (ms)", value: 186 }
+]
+
+const DashboardPage = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6">
+        <div>
+          <Title level={3} className="!mb-1">
+            总览
+          </Title>
+          <Text type="secondary">
+            展示系统运行情况和关键指标，后续会接入真实监控数据
+          </Text>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        <Row gutter={[16, 16]}>
+          {stats.map(item => (
+            <Col key={item.title} xs={12} md={6}>
+              <Card>
+                <div className="flex flex-col gap-2">
+                  <Text type="secondary">{item.title}</Text>
+                  <Title level={4} className="!mb-0">
+                    {item.value}
+                  </Title>
+                </div>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        <Row gutter={[16, 16]}>
+          <Col xs={24} lg={16}>
+            <Card title="错误趋势（占位）">
+              <div className="flex h-64 items-center justify-center text-slate-400">
+                图表区域（后续接入可视化组件）
+              </div>
+            </Card>
+          </Col>
+          <Col xs={24} lg={8}>
+            <Card title="最近告警（占位）">
+              <div className="flex h-64 items-center justify-center text-slate-400">
+                告警列表区域（后续接入接口）
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      </div>
     </div>
-  );
+  )
 }
+
+export default DashboardPage
