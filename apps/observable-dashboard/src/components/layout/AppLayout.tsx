@@ -37,12 +37,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   }
 
   return (
-    <Layout className="min-h-screen bg-[#020617]">
+    <Layout style={{ height: '100vh'}} className="min-h-screen">
       <Sider
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
         width={220}
+        className="bg-[#020617]"
       >
         <div className="flex items-center justify-center h-16 text-white text-lg font-semibold bg-[#020617]">
           {collapsed ? "DT" : "DeepTrace"}
@@ -55,11 +56,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           onClick={handleMenuClick}
         />
       </Sider>
-      <Layout>
-        <Content className="p-4 bg-[#020617]">
-          <div className="h-full rounded-lg bg-[#020617] p-0">
-            {children}
-          </div>
+      <Layout className="bg-white min-h-screen">
+        <Content  className="p-6 bg-white h-full">
+          {children}
         </Content>
       </Layout>
     </Layout>
