@@ -3,12 +3,12 @@
 import React from "react"
 import { AppLayout, AppLayoutMenuItem } from "@/components/layout/AppLayout"
 import { useRouter, usePathname } from "next/navigation"
-import { PieChartOutlined } from "@ant-design/icons"
+import { PieChartOutlined, FileTextOutlined, SettingOutlined } from "@ant-design/icons"
 
 const menuItems: AppLayoutMenuItem[] = [
   { key: "/dashboard", label: "总览", icon: <PieChartOutlined /> },
-  { key: "/dashboard/logs", label: "日志列表" },
-  { key: "/dashboard/settings", label: "设置" }
+  { key: "/dashboard/logs", label: "日志列表", icon: <FileTextOutlined /> },
+  { key: "/dashboard/settings", label: "设置", icon: <SettingOutlined /> }
 ]
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
