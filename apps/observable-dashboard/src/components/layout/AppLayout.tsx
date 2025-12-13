@@ -1,9 +1,9 @@
 "use client"
 
 import React, { ReactNode, useState } from "react"
-import { Layout, Menu } from "antd"
+import { Breadcrumb, Layout, Menu } from "antd"
 
-const { Header, Sider, Content } = Layout
+const { Sider, Content } = Layout
 
 export type AppLayoutMenuItem = {
   key: string
@@ -17,6 +17,7 @@ type AppLayoutProps = {
   selectedKey?: string
   onMenuClick?: (key: string) => void
   headerRight?: ReactNode
+  breadcrumbItems?: { title: ReactNode }[]
   children: ReactNode
 }
 
@@ -26,6 +27,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   selectedKey,
   onMenuClick,
   headerRight,
+  breadcrumbItems,
   children
 }) => {
   const [collapsed, setCollapsed] = useState(false)
@@ -36,12 +38,27 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     }
   }
 
+  const currentMenuItem = menuItems.find(item => item.key === selectedKey)
+  const computedBreadcrumbItems = breadcrumbItems ?? [
+    { title },
+    ...(currentMenuItem
+      ? [{ title: currentMenuItem.label }]
+      : selectedKey
+        ? [{ title: selectedKey }]
+        : [])
+  ]
+
   return (
-    <Layout style={{ height: '100vh'}} className="min-h-screen">
+    <Layout style={{ height: "100vh" }} className="min-h-screen">
       <Sider
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
+        breakpoint="lg"
+        onBreakpoint={broken => {
+          if (broken) setCollapsed(true)
+        }}
+        collapsedWidth={72}
         width={220}
         className="bg-[#020617]"
       >
@@ -57,7 +74,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         />
       </Sider>
       <Layout className="bg-white min-h-screen">
-        <Content  className="p-6 bg-white h-full">
+        <Content className={`bg-white h-full ${collapsed ? "p-4" : "p-6"}`}>
+          <div className="mb-4 flex items-center justify-between">
+            <Breadcrumb items={computedBreadcrumbItems} />
+            {headerRight}
+          </div>
           {children}
         </Content>
       </Layout>

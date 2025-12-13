@@ -15,6 +15,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter()
   const pathname = usePathname()
 
+  const breadcrumbLabelMap: Record<string, string> = {
+    "/dashboard": "Dashboard",
+    "/dashboard/logs": "Logs",
+    "/dashboard/settings": "Settings"
+  }
+
   const handleMenuClick = (key: string) => {
     router.push(key)
   }
@@ -25,6 +31,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       menuItems={menuItems}
       selectedKey={pathname}
       onMenuClick={handleMenuClick}
+      breadcrumbItems={[
+        { title: "DeepTrace" },
+        { title: breadcrumbLabelMap[pathname] ?? "Dashboard" }
+      ]}
     >
       {children}
     </AppLayout>

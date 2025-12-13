@@ -1,162 +1,89 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { Table, Input, Select, Space, Typography, Tag } from "antd"
-import type { ColumnsType } from "antd/es/table"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { Alert, Button, Card, Descriptions, Empty, Tag, Typography } from "antd"
+import { useRouter, useSearchParams } from "next/navigation"
+import { loadSettingsFromStorage } from "@/lib/settingsStorage"
+import { fakeFetchLogs } from "./fakeFetchLogs"
+import { LogsFilter } from "./components/LogsFilter"
+import { LogsTable } from "./components/LogsTable"
+import type { LogItem, LogLevel } from "./types"
+import type { SettingsFormValues } from "@/types/settings"
 
 const { Title, Text } = Typography
 
-type LogLevel = "INFO" | "WARN" | "ERROR"
-
-type LogItem = {
-  id: string
-  timestamp: string
-  level: LogLevel
-  service: string
-  message: string
-  traceId: string
-}
-
-const logLevelColor: Record<LogLevel, string> = {
-  INFO: "blue",
-  WARN: "gold",
-  ERROR: "red"
-}
-
-const mockLogs: LogItem[] = [
-  {
-    id: "1",
-    timestamp: "2025-01-01 10:00:01",
-    level: "INFO",
-    service: "auth-service",
-    message: "用户登录成功",
-    traceId: "trace-10001"
-  },
-  {
-    id: "2",
-    timestamp: "2025-01-01 10:01:12",
-    level: "WARN",
-    service: "order-service",
-    message: "订单创建耗时接近阈值",
-    traceId: "trace-10002"
-  },
-  {
-    id: "3",
-    timestamp: "2025-01-01 10:02:45",
-    level: "ERROR",
-    service: "payment-service",
-    message: "支付回调签名校验失败",
-    traceId: "trace-10003"
-  },
-  {
-    id: "4",
-    timestamp: "2025-01-01 10:03:30",
-    level: "INFO",
-    service: "gateway",
-    message: "心跳检查通过",
-    traceId: "trace-10004"
-  },
-  {
-    id: "5",
-    timestamp: "2025-01-01 10:05:09",
-    level: "WARN",
-    service: "auth-service",
-    message: "多次密码错误触发风险控制",
-    traceId: "trace-10005"
-  },
-  {
-    id: "6",
-    timestamp: "2025-01-01 10:06:21",
-    level: "ERROR",
-    service: "log-ingestor",
-    message: "Kafka 消费延迟超过阈值",
-    traceId: "trace-10006"
-  },
-  {
-    id: "7",
-    timestamp: "2025-01-01 10:08:17",
-    level: "INFO",
-    service: "metrics-service",
-    message: "定时上报指标成功",
-    traceId: "trace-10007"
-  },
-  {
-    id: "8",
-    timestamp: "2025-01-01 10:09:52",
-    level: "WARN",
-    service: "order-service",
-    message: "库存扣减重试次数过多",
-    traceId: "trace-10008"
-  },
-  {
-    id: "9",
-    timestamp: "2025-01-01 10:11:00",
-    level: "ERROR",
-    service: "notification-service",
-    message: "短信服务提供商返回错误码",
-    traceId: "trace-10009"
-  },
-  {
-    id: "10",
-    timestamp: "2025-01-01 10:12:33",
-    level: "INFO",
-    service: "gateway",
-    message: "路由配置热更新完成",
-    traceId: "trace-10010"
-  }
-]
-
-const columns: ColumnsType<LogItem> = [
-  {
-    title: "时间",
-    dataIndex: "timestamp",
-    key: "timestamp",
-    width: 180
-  },
-  {
-    title: "等级",
-    dataIndex: "level",
-    key: "level",
-    width: 100,
-    render: level => {
-      const value = level as LogLevel
-      return <Tag color={logLevelColor[value]}>{value}</Tag>
-    }
-  },
-  {
-    title: "服务名",
-    dataIndex: "service",
-    key: "service",
-    width: 160
-  },
-  {
-    title: "消息",
-    dataIndex: "message",
-    key: "message"
-  },
-  {
-    title: "Trace ID",
-    dataIndex: "traceId",
-    key: "traceId",
-    width: 180
-  }
-]
-
 const LogsPage = () => {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const [logs, setLogs] = useState<LogItem[]>([])
+  const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [settings, setSettings] = useState<SettingsFormValues | null>(null)
+
   const [searchText, setSearchText] = useState("")
   const [levelFilter, setLevelFilter] = useState<LogLevel | "ALL">("ALL")
+  const [onlyErrors, setOnlyErrors] = useState(false)
+
+  const shouldFail = searchParams.get("fail") === "1"
+  const shouldEmpty = searchParams.get("empty") === "1"
+
+  useEffect(() => {
+    const saved = loadSettingsFromStorage()
+    if (!saved) return
+    setSettings(saved)
+    setLevelFilter(saved.defaultLogLevel)
+  }, [])
+
+  const loadLogs = useCallback(async () => {
+    setLoading(true)
+    setErrorMessage(null)
+    try {
+      const data = await fakeFetchLogs({ shouldFail, shouldEmpty })
+      setLogs(data)
+    } catch (error) {
+      setLogs([])
+      setErrorMessage(
+        error instanceof Error ? error.message : "日志加载失败，请稍后重试"
+      )
+    } finally {
+      setLoading(false)
+    }
+  }, [shouldEmpty, shouldFail])
+
+  useEffect(() => {
+    void loadLogs()
+  }, [loadLogs])
+
+  const handleSearchTextChange = useCallback((value: string) => {
+    setSearchText(value)
+  }, [])
+
+  const handleLevelFilterChange = useCallback((value: LogLevel | "ALL") => {
+    setLevelFilter(value)
+  }, [])
+
+  const handleOnlyErrorsChange = useCallback((value: boolean) => {
+    setOnlyErrors(value)
+  }, [])
 
   const filteredLogs = useMemo(() => {
     const text = searchText.trim().toLowerCase()
-    return mockLogs.filter(item => {
+    return logs.filter(item => {
       const matchLevel = levelFilter === "ALL" || item.level === levelFilter
+      const matchOnlyErrors = !onlyErrors || item.level === "ERROR"
       const matchText =
         !text ||
         item.service.toLowerCase().includes(text) ||
         item.message.toLowerCase().includes(text)
-      return matchLevel && matchText
+      return matchLevel && matchOnlyErrors && matchText
     })
-  }, [searchText, levelFilter])
+  }, [logs, searchText, levelFilter, onlyErrors])
+
+  const emptyText = useMemo(() => {
+    if (logs.length > 0 && filteredLogs.length === 0) return "无匹配结果"
+    return "暂无日志数据"
+  }, [filteredLogs.length, logs.length])
 
   return (
     <div className="flex flex-col gap-4">
@@ -165,40 +92,72 @@ const LogsPage = () => {
           日志列表
         </Title>
         <Text type="secondary">
-          查看系统日志，并通过等级与关键词进行简单筛选
+          查看系统日志：支持排序 + 组合筛选，并演练 loading / empty / error 状态
         </Text>
       </div>
 
-      <Space className="flex flex-wrap justify-between gap-3">
-        <Input
-          allowClear
-          placeholder="按服务名或消息搜索"
-          value={searchText}
-          onChange={e => setSearchText(e.target.value)}
-          style={{ maxWidth: 260 }}
-        />
-        <Space>
-          <Text type="secondary">等级</Text>
-          <Select
-            value={levelFilter}
-            style={{ width: 140 }}
-            onChange={value => setLevelFilter(value)}
-            options={[
-              { value: "ALL", label: "全部" },
-              { value: "INFO", label: "INFO" },
-              { value: "WARN", label: "WARN" },
-              { value: "ERROR", label: "ERROR" }
+      {settings && (
+        <Card size="small" className="shadow-sm">
+          <Descriptions
+            size="small"
+            column={{ xs: 1, sm: 2, md: 3 }}
+            items={[
+              { key: "nickname", label: "昵称", children: settings.nickname },
+              {
+                key: "defaultLogLevel",
+                label: "默认日志级别",
+                children: <Tag>{settings.defaultLogLevel}</Tag>
+              },
+              {
+                key: "enableAlert",
+                label: "告警通知",
+                children: settings.enableAlert ? "开启" : "关闭"
+              },
+              { key: "email", label: "通知邮箱", children: settings.email || "-" }
             ]}
           />
-        </Space>
-      </Space>
+          <div className="mt-2 flex justify-end">
+            <Button size="small" onClick={() => router.push("/dashboard/settings")}>
+              去修改设置
+            </Button>
+          </div>
+        </Card>
+      )}
 
-      <Table<LogItem>
-        rowKey="id"
-        columns={columns}
-        dataSource={filteredLogs}
-        pagination={{ pageSize: 10 }}
+      {errorMessage && (
+        <Alert
+          showIcon
+          type="error"
+          message="日志加载失败"
+          description={errorMessage}
+          action={
+            <Button size="small" onClick={loadLogs}>
+              重试
+            </Button>
+          }
+        />
+      )}
+
+      {!errorMessage && !loading && logs.length === 0 && (
+        <Empty
+          description="暂无日志数据"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        >
+          <Button onClick={loadLogs}>重新加载</Button>
+        </Empty>
+      )}
+
+      <LogsFilter
+        loading={loading}
+        searchText={searchText}
+        levelFilter={levelFilter}
+        onlyErrors={onlyErrors}
+        onSearchTextChange={handleSearchTextChange}
+        onLevelFilterChange={handleLevelFilterChange}
+        onOnlyErrorsChange={handleOnlyErrorsChange}
       />
+
+      <LogsTable loading={loading} logs={filteredLogs} emptyText={emptyText} />
     </div>
   )
 }
