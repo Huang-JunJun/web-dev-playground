@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type CacheControlOptions = {
   maxAgeSeconds?: number
   noStore?: boolean
@@ -29,4 +30,16 @@ export const buildCacheControl = (options: CacheControlOptions): string => {
   }
 
   return directives.join(', ')
+}
+
+// src/common/utils.ts
+export type AnyFunc = (...args: any[]) => any
+
+export const myCall = (fn: AnyFunc, ctx: any, ...args: any[]): any => {
+  const context = ctx ?? globalThis
+  const key = Symbol()
+  context[key] = fn
+  const result = context[key](...args)
+  delete context[key]
+  return result
 }
