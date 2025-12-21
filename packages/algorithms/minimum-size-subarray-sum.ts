@@ -5,6 +5,7 @@ export const minSubArrayLen = (target: number, nums: number[]): number => {
   const n = nums.length
   let minLen = n + 1
 
+  // 滑动窗口
   for (let i = 0; i < nums.length; i++) {
     sum += nums[i]
     right++

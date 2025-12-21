@@ -2,6 +2,7 @@ export const maxProfit = (prices: number[]): number => {
   let minPrice = Number.MAX_SAFE_INTEGER
   let maxProfit = 0
 
+  // 一次遍历
   for (const price of prices) {
     if (price < minPrice) {
       minPrice = price

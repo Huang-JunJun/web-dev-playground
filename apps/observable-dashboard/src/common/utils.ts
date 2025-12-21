@@ -43,3 +43,29 @@ export const myCall = (fn: AnyFunc, ctx: any, ...args: any[]): any => {
   delete context[key]
   return result
 }
+
+export const myPromiseAll = <T>(items: Array<Promise<T> | T>): Promise<T[]> => {
+  return new Promise<T[]>((resolve, reject) => {
+    if (items.length === 0) {
+      resolve([])
+      return
+    }
+
+    const results: T[] = new Array(items.length)
+    let resolvedCount = 0
+
+    items.forEach((item, index) => {
+      Promise.resolve(item)
+        .then((value) => {
+          results[index] = value
+          resolvedCount++
+          if (resolvedCount === items.length) {
+            resolve(results)
+          }
+        })
+        .catch((err) => {
+          reject(err)
+        })
+    })
+  })
+}
