@@ -69,3 +69,24 @@ export const myPromiseAll = <T>(items: Array<Promise<T> | T>): Promise<T[]> => {
     })
   })
 }
+
+type Job = () => void
+
+export const createMicroTaskScheduler = () => {
+  const queue: Job[] = []
+  let pending = false
+
+  return (job: Job) => {
+    queue.push(job)
+    if (!pending) {
+      pending = true
+      Promise.resolve().then(() => {
+        pending = false
+        const jobsToRun = queue.splice(0, queue.length)
+        for (const j of jobsToRun) {
+          j()
+        }
+      })
+    }
+  }
+}
