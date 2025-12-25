@@ -1,46 +1,79 @@
-console.log("A")
+// console.log("A")
 
-setTimeout(() => {
-  console.log("timeout")
-}, 0)
+// setTimeout(() => {
+//   console.log("timeout")
+// }, 0)
 
-Promise.resolve().then(() => {
-  console.log("promise then 1")
-}).then(() => {
-  console.log("promise then 2")
-})
+// Promise.resolve().then(() => {
+//   console.log("promise then 1")
+// }).then(() => {
+//   console.log("promise then 2")
+// })
 
-console.log("B")
+// console.log("B")
 
-async function test() {
-  console.log("1")
-  await Promise.resolve()
-  console.log("2")
-}
+// async function test() {
+//   console.log("1")
+//   await Promise.resolve()
+//   console.log("2")
+// }
 
-console.log("start")
-test()
-console.log("end")
+// console.log("start")
+// test()
+// console.log("end")
 
-Promise.resolve()
-  .then(() => {
-    throw new Error("err in then")
-  })
-  .catch((err) => {
-    console.log("caught in catch:", err.message)
-    return 123
+// Promise.resolve()
+//   .then(() => {
+//     throw new Error("err in then")
+//   })
+//   .catch((err) => {
+//     console.log("caught in catch:", err.message)
+//     return 123
+//   })
+//   .then((value) => {
+//     console.log("after catch then:", value)
+//   })
+
+// const foo = async () => {
+//   try {
+//     await Promise.reject(new Error("err in async"))
+//     console.log("never here")
+//   } catch (e: any) {
+//     console.log("caught in try/catch:", e.message)
+//   }
+// }
+
+// foo()
+
+Promise.resolve(1)
+  .then((value) => {
+    console.log("step 1:", value)
+    return value + 1
   })
   .then((value) => {
-    console.log("after catch then:", value)
+    console.log("step 2:", value)
+    throw new Error("boom")
+  })
+  .then(() => {
+    console.log("step 3: never here")
+  })
+  .catch((err) => {
+    console.log("caught:", err.message)
+    return 999
+  })
+  .then((value) => {
+    console.log("step 4:", value)
   })
 
-const foo = async () => {
-  try {
-    await Promise.reject(new Error("err in async"))
-    console.log("never here")
-  } catch (e: any) {
-    console.log("caught in try/catch:", e.message)
+  const foo = async () => {
+    try {
+      await Promise.reject(new Error("async error"))
+      console.log("never here")
+    } catch (e: any) {
+      console.log("caught in async:", e.message)
+    } finally {
+      console.log("finally in async")
+    }
   }
-}
 
 foo()
