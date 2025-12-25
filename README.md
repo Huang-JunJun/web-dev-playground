@@ -104,8 +104,6 @@ web-dev-playground/
 
 ## 六、学习进度日志
 
-### Day 1（项目初始化与基础布局）
-
 - 建立 `web-dev-playground` 仓库，确定 monorepo 结构：
   - `apps/observable-dashboard` 作为主项目（DeepTrace）
   - `docs/notes` 用于存放学习笔记
@@ -123,3 +121,21 @@ web-dev-playground/
   - 通过经典示例说明 `start → end → promise → timeout` 的执行流程
 
 > 后续每天会在此区域追加新的 Day X 记录，用于追踪项目与学习进展。
+
+# 防抖（debounce）与节流（throttle）
+
+## 1. 防抖
+
+- 定义：高频触发时，只在“停止触发一段时间后”执行一次。
+- 常见场景：
+  - 输入框搜索、联想
+  - resize 结束时重新布局
+- 核心实现：每次触发都重置定时器。
+
+## 2. 节流
+
+- 定义：高频触发时，按固定时间间隔执行，限速。
+- 常见场景：
+  - scroll 监听（上报曝光、懒加载）
+  - mousemove 拖拽
+- 核心实现：记录上次执行时间 / 使用定时器控制。

@@ -1,3 +1,5 @@
+import { clear } from "console"
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type CacheControlOptions = {
   maxAgeSeconds?: number
@@ -87,6 +89,35 @@ export const createMicroTaskScheduler = () => {
           j()
         }
       })
+    }
+  }
+}
+
+export const debounce = <F extends (...args: any[]) => void>(
+  fn: F,
+  wait: number
+) => {
+  const timer: ReturnType<typeof setTimeout> | null = null
+  return (...args: Parameters<F>) => {
+    if (timer) {
+      clearTimeout(timer)
+    }
+    setTimeout(() => {
+      fn(...args)
+    }, wait)
+  }
+}
+
+export const throttle = <F extends (...args: any[]) => void>(
+  fn: F,
+  wait: number
+) => {
+  let lastTime: number | null = null
+  return (...args: Parameters<F>) => {
+    const now = Date.now()
+    if (lastTime === null || now - lastTime >= wait) {
+      lastTime = now
+      fn(...args)
     }
   }
 }
