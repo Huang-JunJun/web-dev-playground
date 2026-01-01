@@ -72,6 +72,42 @@ export const myPromiseAll = <T>(items: Array<Promise<T> | T>): Promise<T[]> => {
   })
 }
 
+export type PromiseSettledResult<T> =
+  | { status: "fulfilled"; value: T }
+  | { status: "rejected"; reason: any }
+
+export const myPromiseAllSettled = <T>(
+  items: Array<Promise<T> | T>
+): Promise<PromiseSettledResult<T>[]> => {
+
+  return Promise.resolve([] as PromiseSettledResult<T>[]).then((items) => {
+    if (items.length === 0) {
+      return []
+    }
+
+    const results: PromiseSettledResult<T>[] = new Array(items.length)
+    let resolvedCount = 0
+
+    items.forEach((item, index) => {
+      Promise.resolve(item)
+        .then((value) => {
+          results[index] = { status: "fulfilled", value }
+          resolvedCount++
+          if (resolvedCount === items.length) {
+            return results
+          }
+        })
+        .catch((reason) => {
+          results[index] = { status: "rejected", reason }
+          resolvedCount++
+          if (resolvedCount === items.length) {
+            return results
+          }
+        })
+    })
+  })
+}
+
 // type Job = () => void
 
 // export const createMicroTaskScheduler = () => {

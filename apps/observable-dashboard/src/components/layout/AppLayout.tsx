@@ -1,6 +1,6 @@
 "use client"
 
-import React, { ReactNode, useState } from "react"
+import React, { ReactNode, useEffect, useMemo, useState } from "react"
 import { Breadcrumb, Layout, Menu } from "antd"
 
 const { Sider, Content } = Layout
@@ -9,6 +9,7 @@ export type AppLayoutMenuItem = {
   key: string
   label: ReactNode
   icon?: ReactNode
+  children?: AppLayoutMenuItem[]
 }
 
 type AppLayoutProps = {
@@ -31,6 +32,19 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   children
 }) => {
   const [collapsed, setCollapsed] = useState(false)
+  const menuPath = useMemo(
+    () => findMenuPath(menuItems, selectedKey),
+    [menuItems, selectedKey]
+  )
+  const derivedOpenKeys = useMemo(
+    () => menuPath.slice(0, -1).map(item => String(item.key)),
+    [menuPath]
+  )
+  const [openKeys, setOpenKeys] = useState<string[]>(derivedOpenKeys)
+
+  useEffect(() => {
+    setOpenKeys(derivedOpenKeys)
+  }, [derivedOpenKeys])
 
   const handleMenuClick = (info: { key: string }) => {
     if (onMenuClick) {
@@ -38,15 +52,18 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     }
   }
 
-  const currentMenuItem = menuItems.find(item => item.key === selectedKey)
   const computedBreadcrumbItems = breadcrumbItems ?? [
     { title },
-    ...(currentMenuItem
-      ? [{ title: currentMenuItem.label }]
-      : selectedKey
-        ? [{ title: selectedKey }]
-        : [])
+    ...menuPath.map(item => ({ title: item.label ?? item.key }))
   ]
+
+  const handleOpenChange = (nextOpenKeys: string[]) => {
+    if (nextOpenKeys.length <= 1) {
+      setOpenKeys(nextOpenKeys)
+      return
+    }
+    setOpenKeys([nextOpenKeys[nextOpenKeys.length - 1]])
+  }
 
   return (
     <Layout style={{ height: "100vh" }} className="min-h-screen">
@@ -69,6 +86,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           theme="dark"
           mode="inline"
           selectedKeys={selectedKey ? [selectedKey] : []}
+          openKeys={openKeys}
+          onOpenChange={handleOpenChange}
           items={menuItems}
           onClick={handleMenuClick}
         />
@@ -84,4 +103,26 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       </Layout>
     </Layout>
   )
+}
+
+const findMenuPath = (
+  items: AppLayoutMenuItem[],
+  targetKey?: string
+): AppLayoutMenuItem[] => {
+  if (!targetKey) return []
+
+  for (const item of items) {
+    if (item.key === targetKey) {
+      return [item]
+    }
+
+    if (item.children?.length) {
+      const childPath = findMenuPath(item.children, targetKey)
+      if (childPath.length) {
+        return [item, ...childPath]
+      }
+    }
+  }
+
+  return []
 }
